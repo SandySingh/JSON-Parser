@@ -2,27 +2,42 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"testing"
 )
 
 func TestStep1(t *testing.T) {
-	dir := "tests/step1"
-	files, err := os.ReadDir(dir)
-	if err != nil {
-		t.Fatal("Cannot read directory")
-	}
+	validFiles := []string{"tests/step1/valid.json"}
+	testValidFiles(t, validFiles...)
 
+	invalidFiles := []string{"tests/step1/invalid.json"}
+	testInvalidFiles(t, invalidFiles...)
+}
+
+func testValidFiles(t *testing.T, files ...string) {
 	for _, file := range files {
-		testname := fmt.Sprintf("Running test for file: %s", file.Name())
+		testname := fmt.Sprintf("Running test for file: %s", file)
 		t.Run(testname, func(t *testing.T) {
-			filePath := dir + "/" + file.Name()
-			data, err := os.ReadFile(filePath)
+			res, err := readAndParse(file)
 			if err != nil {
-				t.Fatalf("Cannot read file %s", file.Name())
+				t.Fatal("Some error occurred")
 			}
-			if !parse(data) {
-				t.Errorf("JSON not valid for file %s", file.Name())
+			if !res {
+				t.Errorf("JSON validation failed for file: %s", file)
+			}
+		})
+	}
+}
+
+func testInvalidFiles(t *testing.T, files ...string) {
+	for _, file := range files {
+		testname := fmt.Sprintf("Running test for file: %s", file)
+		t.Run(testname, func(t *testing.T) {
+			res, err := readAndParse(file)
+			if err != nil {
+				t.Fatal("Some error occurred")
+			}
+			if res {
+				t.Errorf("JSON validation failed for file: %s", file)
 			}
 		})
 	}
